@@ -14,7 +14,7 @@ import java.lang.Math;
 
 public class Main extends Application {
 
-  final String IMAGEFILE="catbig.png";
+  final String IMAGEFILE="cat.png";
 
   static void main(String[] args) {
     launch(args);
@@ -27,18 +27,21 @@ public class Main extends Application {
     root.getChildren().add(hBox);
     Scene scene = new Scene(root, 1204, 600);
     stage.setScene(scene);
-    stage.sizeToScene();
-    stage.show();
-
-
+    //
+    //
     Image img = new Image(IMAGEFILE);
+
     ImageView imageView = new ImageView();
     imageView.setImage(img);
     hBox.getChildren().add(imageView);
 
     ImageView imageView2 = new ImageView();
-    imageView2.setImage(quickSecondBlur(img));
+    imageView2.setImage(mosaicBlur(img));
     hBox.getChildren().add(imageView2);
+    //
+    //
+    stage.sizeToScene();
+    stage.show();
   }
 
   static Image simpleBlur(Image old, int iterations){
@@ -74,7 +77,7 @@ public class Main extends Application {
     return secondBlur(old, ITERATIONS, DEFINITION);
   }
 
-  static Image secondBlur(Image old, int iterations, final int DEFINITION){
+  static Image secondBlur(Image old, int iterations, final double definition){
     System.out.print("Completion: 0%");
     PixelReader pr = old.getPixelReader();
     WritableImage img = new WritableImage(pr, (int) old.widthProperty().get(), (int) old.heightProperty().get());
@@ -93,10 +96,10 @@ public class Main extends Application {
               if(x!=x2||y!=y2){
                 double dx = Math.abs(x2-x);
                 double dy = Math.abs(y2-y);
-                red   += pr.getColor(x2, y2).getRed()/Math.pow(dx+dy,DEFINITION);
-                green += pr.getColor(x2, y2).getGreen()/Math.pow(dx+dy,DEFINITION);
-                blue  += pr.getColor(x2, y2).getBlue()/Math.pow(dx+dy,DEFINITION);
-                prioritysum+=1/Math.pow(dx+dy,DEFINITION);
+                red   += pr.getColor(x2, y2).getRed()/Math.pow(dx+dy,definition);
+                green += pr.getColor(x2, y2).getGreen()/Math.pow(dx+dy,definition);
+                blue  += pr.getColor(x2, y2).getBlue()/Math.pow(dx+dy,definition);
+                prioritysum+=1/Math.pow(dx+dy,definition);
               }
             }
           }
@@ -120,12 +123,12 @@ public class Main extends Application {
 
   static Image quickSecondBlur(Image old){
     final int ITERATIONS=1;
-    final int DEFINITION=2; //Can be changed to double without issue
-    final int RANGE_LIMIT=50;
+    final double DEFINITION=2; //Can be changed to double without issue
+    final int RANGE_LIMIT=10;
     return quickSecondBlur(old, ITERATIONS, DEFINITION, RANGE_LIMIT);
   }
 
-  static Image quickSecondBlur(Image old, int iterations, int definition, int rangeLimit){
+  static Image quickSecondBlur(Image old, int iterations, double definition, int rangeLimit){
     System.out.print("Completion: 0%");
     int completion=0;
 
@@ -173,6 +176,66 @@ public class Main extends Application {
       old=img;
     }
     System.out.println();
+    return img;
+  }
+
+  static Image mosaicBlur(Image old){
+    final int X_BLOCKS = 10;
+    final int Y_BLOCKS = 10;
+    return mosaicBlur(old, X_BLOCKS, Y_BLOCKS);
+  }
+
+  static Image mosaicBlur(Image old, int xBlocks, int yBlocks){
+    if(xBlocks<1||yBlocks<1) return old;
+    else if(xBlocks>=old.widthProperty().get()&&yBlocks>=old.heightProperty().get()) return old;
+
+    class Block{
+      int startX;
+      int startY;
+      public Block(int startX, int startY){
+        this.startX=startX;
+        this.startY=startY;
+      }
+    }
+
+    PixelReader pr = old.getPixelReader();
+    WritableImage img = new WritableImage(pr, (int) old.widthProperty().get(), (int) old.heightProperty().get());
+    PixelWriter pw = img.getPixelWriter();
+
+    Block[] blocks = new Block[xBlocks*yBlocks];
+    double blockWidth = old.widthProperty().get()/xBlocks;
+    double blockHeight = old.heightProperty().get()/yBlocks;
+
+    for(int x=0;x<xBlocks;x++){
+      for(int y=0; y<yBlocks;y++){
+        blocks[x*xBlocks+y]=new Block((int)Math.floor(x*blockWidth), (int)Math.floor(y*blockHeight));
+      }
+    }
+
+    for(Block block:blocks){
+      double red=0;
+      double green=0;
+      double blue=0;
+      int count=0;
+
+      for(int x=block.startX;x<block.startX+blockWidth;x++){
+        for(int y=block.startY;y<block.startY+blockHeight;y++){
+          Color pixelColor = pr.getColor(x, y);
+          red+=pixelColor.getRed();
+          green+=pixelColor.getGreen();
+          blue+=pixelColor.getBlue();
+          count++;
+        }
+      }
+      red/=count;
+      green/=count;
+      blue/=count;
+      for(int x=block.startX;x<block.startX+blockWidth;x++){
+        for(int y=block.startY;y<block.startY+blockHeight;y++){
+          pw.setColor(x, y, Color.color(red, green, blue));
+        }
+      }
+    }
     return img;
   }
 }
