@@ -37,13 +37,14 @@ public class Main extends Application {
     stage.setTitle("Blur");
 
     // Choose image
-    Image image = selectImage(stage);
-    ImageView originalImageView;
+    Image image;
     try{
-      originalImageView = new ImageView();
+      image = selectImage(stage);
     } catch (Exception e) {
       return;
     }
+    ImageView originalImageView;
+    originalImageView = new ImageView();
     originalImageView.setImage(image);
     hBox.getChildren().add(originalImageView);
     if(image==null) return;
