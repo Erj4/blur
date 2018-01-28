@@ -1,3 +1,4 @@
+package uk.erj4.blur.blurs;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
@@ -5,8 +6,8 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-class SimpleBlur extends Blur {
-  Image blur(Image old){
+public class SimpleBlur extends Blur {
+  public Image blur(Image old){
     final int ITERATIONS=1;
     return blur(old, ITERATIONS);
   }

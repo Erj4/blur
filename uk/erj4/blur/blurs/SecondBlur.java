@@ -1,3 +1,4 @@
+package uk.erj4.blur.blurs;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
@@ -5,20 +6,15 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-class QuickSecondBlur extends Blur {
-  Image blur(Image old){
+public class SecondBlur extends Blur {
+  public Image blur(Image old){
     final int ITERATIONS=1;
-    final double DEFINITION=2; //Can be changed to double without issue
-    final int RANGE_LIMIT=10;
-    return blur(old, ITERATIONS, DEFINITION, RANGE_LIMIT);
+    final int DEFINITION=2; //Can be changed to double without issue
+    return blur(old, ITERATIONS, DEFINITION);
   }
 
-  Image blur(Image old, int iterations, double definition, int rangeLimit){
+  Image blur(Image old, int iterations, final double definition){
     System.out.print("Completion: 0%");
-    int completion=0;
-
-    if(rangeLimit<-1||rangeLimit==0) return old;
-    if(rangeLimit==-1) return new SecondBlur().blur(old, iterations, definition);
     PixelReader pr = old.getPixelReader();
     WritableImage img = new WritableImage(pr, (int) old.widthProperty().get(), (int) old.heightProperty().get());
     for(int i=0;i<iterations;i++){
@@ -31,8 +27,8 @@ class QuickSecondBlur extends Blur {
           double green = 0;
           double blue  = 0;
           double prioritysum = 0;
-          for(int x2=Math.max(x-rangeLimit,0);x2<Math.min(x+rangeLimit,old.widthProperty().get());x2++){
-            for(int y2=Math.max(y-rangeLimit,0);y2<Math.min(y+rangeLimit,old.heightProperty().get());y2++){
+          for(int x2=0;x2<old.widthProperty().get();x2++){
+            for(int y2=0;y2<old.heightProperty().get();y2++){
               if(x!=x2||y!=y2){
                 double dx = Math.abs(x2-x);
                 double dy = Math.abs(y2-y);
@@ -51,12 +47,9 @@ class QuickSecondBlur extends Blur {
             );
           pw.setColor(x, y, newColor);
         }
-
-        if(completion>=10) System.out.print("\b");
+        if((int)(100*(i*old.widthProperty().get()*old.heightProperty().get()+x*old.heightProperty().get())/(iterations*old.widthProperty().get()*old.heightProperty().get()))>=10) System.out.print("\b");
         System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-        completion=(int)(100*(i*old.widthProperty().get()*old.heightProperty().get()+x*old.heightProperty().get())/(iterations*old.widthProperty().get()*old.heightProperty().get()));
-        System.out.print("Completion: "+completion+"%");
-
+        System.out.print("Completion: "+(int)(100*(i*old.widthProperty().get()*old.heightProperty().get()+x*old.heightProperty().get())/(iterations*old.widthProperty().get()*old.heightProperty().get()))+"%");
       }
       old=img;
     }

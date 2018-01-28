@@ -1,3 +1,4 @@
+package uk.erj4.blur;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.application.Application;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import javafx.scene.control.ChoiceDialog;
 import java.util.Optional;
 import javafx.stage.FileChooser.ExtensionFilter;
-import blurs.*;
+import uk.erj4.blur.blurs.*;
 
 public class Main extends Application {
 
